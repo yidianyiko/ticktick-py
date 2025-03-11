@@ -18,8 +18,7 @@ class TickTickClient:
     INITIAL_BATCH_URL = BASE_URL + 'batch/check/0'
 
     USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:123.0) Gecko/20100101 Firefox/123.0"
-    X_DEVICE_ = '{"platform":"web","os":"OS X","device":"Firefox 123.0","name":"unofficial api!","version":4531,' \
-                '"id":"6490' + secrets.token_hex(10) + '","channel":"website","campaign":"","websocket":""}'
+    X_DEVICE_ = '{"platform":"web","os":"macOS 10.15.7","device":"Safari 605.1.15","name":"","version":6060,"id":"66e7' + secrets.token_hex(10) + '","channel":"website","campaign":"","websocket":"66f7ac74df60f62a433c0aac"}'
 
     HEADERS = {'User-Agent': USER_AGENT,
                'x-device': X_DEVICE_}
@@ -119,6 +118,7 @@ class TickTickClient:
             RuntimeError: If the status code of the response was not 200.
         """
         if response.status_code != 200:
+            print(response.status_code)
             raise RuntimeError(error_message)
 
     def _settings(self):
@@ -181,13 +181,39 @@ class TickTickClient:
         Raises:
             RunTimeError: If the request could not be completed.
         """
-        response = self._session.post(url, **kwargs)
+        if 'headers' not in kwargs:
+            response = self._session.post(url, headers=self.HEADERS, **kwargs)
+        else:
+            kwargs['headers'].update(self.HEADERS)
+            response = self._session.post(url, **kwargs)
         self.check_status_code(response, 'Could Not Complete Request')
 
         try:
             return response.json()
         except ValueError:
             return response.text
+
+    # def http_post(self, url, **kwargs):
+    #     """
+    #     Sends an http post request with the specified url and keyword arguments.
+
+    #     Arguments:
+    #         url (str): Url to send the request.
+    #         **kwargs: Arguments to send with the request.
+
+    #     Returns:
+    #         dict: The json parsed response if possible or just a string of the response text if not.
+
+    #     Raises:
+    #         RunTimeError: If the request could not be completed.
+    #     """
+    #     response = self._session.post(url, **kwargs)
+    #     self.check_status_code(response, 'Could Not Complete Request')
+
+    #     try:
+    #         return response.json()
+    #     except ValueError:
+    #         return response.text
 
     def http_get(self, url, **kwargs):
         """

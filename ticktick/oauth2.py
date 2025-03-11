@@ -51,7 +51,7 @@ class OAuth2:
                  state: str = None,
                  session=None,
                  env_key: str = None,
-                 cache_path: str = '.token-oauth',
+                 cache_path: str = '/Users/Dave/gists/ticktick-helper/.token-oauth',
                  check_cache: bool = True
                  ):
         """
@@ -245,6 +245,8 @@ class OAuth2:
         """
 
         response = self.session.post(url, **kwargs)
+        print(response.url)
+        print(response.status_code)
         if response.status_code != 200:
             raise RuntimeError("POST request could not be completed")
 

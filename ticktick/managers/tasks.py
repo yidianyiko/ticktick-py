@@ -11,7 +11,7 @@ class TaskManager:
     Handles all interactions for tasks.
     """
 
-    TASK_CREATE_ENDPOINT = "/open/v1/task"
+    TASK_CREATE_ENDPOINT = "/api/v2/task"
 
     def __init__(self, client_class):
         # ._client is a reference to the original client_class
@@ -36,7 +36,7 @@ class TaskManager:
         Returns the endpoint url for task creation
         """
 
-        CREATE_ENDPOINT = "/open/v1/task"
+        CREATE_ENDPOINT = "/api/v2/task"
         return self._client.OPEN_API_BASE_URL + CREATE_ENDPOINT
 
     def create(self, task):
@@ -175,7 +175,7 @@ class TaskManager:
         Generates the url for updating a task based off the taskID
         """
 
-        UPDATE_ENDPOINT = f"/open/v1/task/{taskID}"
+        UPDATE_ENDPOINT = f"/api/v2/task/{taskID}"
         return self._client.OPEN_API_BASE_URL + UPDATE_ENDPOINT
 
     def update(self, task):
