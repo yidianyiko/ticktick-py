@@ -1,4 +1,7 @@
 import secrets
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from ticktick.managers.focus import FocusTimeManager
 from ticktick.managers.habits import HabitManager
@@ -7,7 +10,6 @@ from ticktick.managers.projects import ProjectManager
 from ticktick.managers.settings import SettingsManager
 from ticktick.managers.tags import TagsManager
 from ticktick.managers.tasks import TaskManager
-from ticktick.oauth2 import OAuth2
 
 
 class TickTickClient:
@@ -23,7 +25,7 @@ class TickTickClient:
     HEADERS = {'User-Agent': USER_AGENT,
                'x-device': X_DEVICE_}
 
-    def __init__(self, username: str, password: str, oauth: OAuth2) -> None:
+    def __init__(self, username: str, password: str) -> None:
         """
         Initializes a client session. In order to interact with the API
         a successful login must occur.
@@ -31,13 +33,13 @@ class TickTickClient:
         Arguments:
             username: TickTick Username
             password: TickTick Password
-            oauth: OAuth2 manager
 
         Raises:
             RunTimeError: If the login was not successful.
         """
         # Class members
-
+        self.username = username
+        self.password = password
         self.access_token = None
         self.cookies = {}
         self.time_zone = ''
@@ -45,8 +47,9 @@ class TickTickClient:
         self.inbox_id = ''
         self.state = {}
         self.reset_local_state()
-        self.oauth_manager = oauth
-        self._session = self.oauth_manager.session
+        
+        # Create session with retry mechanism
+        self._session = self._create_session()
 
         self._prepare_session(username, password)
 
@@ -66,6 +69,25 @@ class TickTickClient:
         self._login(username, password)
         self._settings()
         self.sync()
+
+    def _create_session(self):
+        """
+        Creates a requests session with retry mechanism.
+        """
+        session = requests.Session()
+        
+        # Configure retry strategy
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+        )
+        
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
+        
+        return session
 
     def reset_local_state(self):
         """

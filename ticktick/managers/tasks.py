@@ -21,8 +21,8 @@ class TaskManager:
         self.oauth_access_token = ''
 
         # set access token to valid oauth access token if available
-        if self._client.oauth_manager.access_token_info is not None:
-            self.oauth_access_token = self._client.oauth_manager.access_token_info['access_token']
+        if self._client.access_token is not None:
+            self.oauth_access_token = self._client.access_token
 
         # oauth headers have some extra fields
         self.oauth_headers = {'Content-Type': 'application/json',
@@ -257,7 +257,7 @@ class TaskManager:
         Generates the url for marking a task as complete based off the projectID and taskID
         """
 
-        COMPLETE_ENDPOINT = f"/open/v1/project/{projectID}/task/{taskID}/complete"
+        COMPLETE_ENDPOINT = f"/api/v2/task/{taskID}"
         return self._client.OPEN_API_BASE_URL + COMPLETE_ENDPOINT
 
     def complete(self, task: dict):
@@ -305,7 +305,10 @@ class TaskManager:
         # generate url
         url = self._generate_mark_complete_url(task['projectId'], task['id'])
 
-        # make request
+        # update the task status to completed
+        task['status'] = 2  # 2 means completed
+
+        # make request using oauth headers like the update method
         response = self._client.http_post(url=url, json=task, headers=self.oauth_headers)
 
         # sync local state
